@@ -50,14 +50,13 @@ WORKDIR /build/cardano-addresses
 # Configure cabal to use system dependencies
 RUN cabal configure --enable-executable-static
 
-# Update cabal and build
+# Update cabal and build (only executables, skip tests)
 RUN cabal update && \
-    cabal build all
+    cabal build exe:cardano-address
 
 # List and copy the built binary
 RUN mkdir -p /output && \
-    cabal list-bin all && \
-    cp $(cabal list-bin all | grep cardano-address | head -1) /output/cardano-addresses
+    cp $(cabal list-bin exe:cardano-address) /output/cardano-addresses
 
 # Verify the binary works
 RUN /output/cardano-addresses --version

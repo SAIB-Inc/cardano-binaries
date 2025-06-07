@@ -13,7 +13,7 @@ on:
       ghc_version:
         description: 'GHC version to use'
         required: false
-        default: '9.10'
+        default: '9.10.1'
       cabal_version:
         description: 'Cabal version to use'
         required: false
@@ -52,7 +52,7 @@ jobs:
           docker buildx build \
             --platform linux/arm64 \
             --build-arg CARDANO_ADDRESSES_TAG=${{ steps.determine_tag.outputs.cardano_tag }} \
-            --build-arg GHC_VERSION=${{ github.event.inputs.ghc_version || '9.10' }} \
+            --build-arg GHC_VERSION=${{ github.event.inputs.ghc_version || '9.10.1' }} \
             --build-arg CABAL_VERSION=${{ github.event.inputs.cabal_version || '3.12.1.0' }} \
             -f Dockerfile.cardano-addresses-linux-arm64 \
             -t cardano-addresses-builder \
@@ -140,7 +140,7 @@ jobs:
             
             ### Release Notes
             This binary was built using:
-            - GHC 9.10
+            - GHC 9.10.1
             - Cabal 3.12.1.0 
             - Static linking for maximum portability
           files: |

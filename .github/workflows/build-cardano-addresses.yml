@@ -3,7 +3,7 @@ name: Build Cardano Addresses
 on:
   push:
     tags:
-      - 'cardano-addresses-v*'
+      - 'cardano-addresses-*'
   pull_request:
     branches: [ main ]
     paths:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Cardano Addresses tag/branch to build (e.g., v3.15.0)'
+        description: 'Cardano Addresses tag/branch to build (e.g., 4.0.0)'
         required: true
         default: 'master'
       ghc_version:
@@ -42,8 +42,8 @@ jobs:
             --build-arg CARDANO_ADDRESSES_TAG=4.0.0 \
             --build-arg GHC_VERSION=9.10.1 \
             --build-arg CABAL_VERSION=3.12.1.0 \
-            --cache-from=type=gha \
-            --cache-to=type=gha,mode=max \
+            --cache-from=type=gha,scope=test-amd64 \
+            --cache-to=type=gha,mode=max,scope=test-amd64 \
             -f Dockerfile.cardano-addresses-linux-arm64 \
             --progress=plain \
             -t cardano-addresses-test \
@@ -51,7 +51,13 @@ jobs:
 
       - name: Test binary functionality
         run: |
+          echo "Testing cardano-addresses binary..."
           docker run --rm cardano-addresses-test cardano-addresses --version
+          echo "Testing help command..."
+          docker run --rm cardano-addresses-test cardano-addresses --help
+          echo "Testing user permissions..."
+          docker run --rm cardano-addresses-test whoami
+          echo "✅ All tests passed!"
 
   build-linux-arm64:
     runs-on: ubuntu-latest
@@ -63,20 +69,31 @@ jobs:
       - name: Determine cardano-addresses tag
         id: determine_tag
         run: |
+          set -euo pipefail
+          
           if [ "${{ github.event_name }}" = "push" ]; then
-            # Extract version from binary-specific tag (e.g., cardano-addresses-v3.15.0 -> v3.15.0)
+            # Extract version from binary-specific tag (e.g., cardano-addresses-4.0.0 -> 4.0.0)
             TAG_NAME="${{ github.ref_name }}"
             if [[ "$TAG_NAME" == cardano-addresses-* ]]; then
               CARDANO_TAG="${TAG_NAME#cardano-addresses-}"
+              if [ -z "$CARDANO_TAG" ]; then
+                echo "Error: Invalid tag format - version part is empty"
+                exit 1
+              fi
             else
-              echo "Error: Tag must start with 'cardano-addresses-'"
+              echo "Error: Tag must start with 'cardano-addresses-', got: $TAG_NAME"
               exit 1
             fi
           else
             CARDANO_TAG="${{ github.event.inputs.tag }}"
+            if [ -z "$CARDANO_TAG" ]; then
+              echo "Error: Tag input cannot be empty"
+              exit 1
+            fi
           fi
+          
           echo "cardano_tag=$CARDANO_TAG" >> $GITHUB_OUTPUT
-          echo "Building cardano-addresses from tag/branch: $CARDANO_TAG"
+          echo "✅ Building cardano-addresses from tag/branch: $CARDANO_TAG"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -88,8 +105,8 @@ jobs:
             --build-arg CARDANO_ADDRESSES_TAG=${{ steps.determine_tag.outputs.cardano_tag }} \
             --build-arg GHC_VERSION=${{ github.event.inputs.ghc_version || '9.10.1' }} \
             --build-arg CABAL_VERSION=${{ github.event.inputs.cabal_version || '3.12.1.0' }} \
-            --cache-from=type=gha \
-            --cache-to=type=gha,mode=max \
+            --cache-from=type=gha,scope=build-arm64 \
+            --cache-to=type=gha,mode=max,scope=build-arm64 \
             -f Dockerfile.cardano-addresses-linux-arm64 \
             -t cardano-addresses-builder \
             --load .
@@ -126,6 +143,8 @@ jobs:
       - name: Determine release tag
         id: release_tag
         run: |
+          set -euo pipefail
+          
           if [ "${{ github.event_name }}" = "push" ]; then
             TAG_NAME="${{ github.ref_name }}"
             if [[ "$TAG_NAME" == cardano-addresses-* ]]; then
@@ -136,7 +155,9 @@ jobs:
           else
             CARDANO_TAG="${{ github.event.inputs.tag }}"
           fi
+          
           echo "cardano_tag=$CARDANO_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Release tag determined: $CARDANO_TAG"
           
       - name: Download all artifacts
         uses: actions/download-artifact@v4

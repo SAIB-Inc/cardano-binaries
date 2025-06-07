@@ -12,30 +12,30 @@ This repository uses binary-specific tags to trigger builds for individual tools
 
 ### Tag Format
 ```
-<binary-name>-v<version>
+<binary-name>-<version>
 ```
 
 ### Examples
-- `cardano-addresses-v4.0.0` - Builds cardano-addresses version 4.0.0 (latest)
-- `cardano-cli-v8.20.0` - Would build cardano-cli version 8.20.0 (when implemented)
-- `cardano-node-v8.9.0` - Would build cardano-node version 8.9.0 (when implemented)
+- `cardano-addresses-4.0.0` - Builds cardano-addresses version 4.0.0 (latest)
+- `cardano-cli-8.20.0` - Would build cardano-cli version 8.20.0 (when implemented)
+- `cardano-node-8.9.0` - Would build cardano-node version 8.9.0 (when implemented)
 
 ### How It Works
-1. **Tag Push**: Push a binary-specific tag (e.g., `cardano-addresses-v4.0.0`)
-2. **Version Extraction**: The workflow extracts the version (`v4.0.0`) from the tag
+1. **Tag Push**: Push a binary-specific tag (e.g., `cardano-addresses-4.0.0`)
+2. **Version Extraction**: The workflow extracts the version (`4.0.0`) from the tag
 3. **Source Checkout**: Checks out the corresponding tag from the IntersectMBO repository
 4. **Build**: Builds the binary using the recommended GHC/Cabal versions
 5. **Release**: Creates a GitHub release with the compiled binaries
 
 ### Usage
 ```bash
-# Release cardano-addresses v4.0.0 (latest)
-git tag cardano-addresses-v4.0.0
-git push origin cardano-addresses-v4.0.0
+# Release cardano-addresses 4.0.0 (latest)
+git tag cardano-addresses-4.0.0
+git push origin cardano-addresses-4.0.0
 
 # This will:
 # 1. Trigger the cardano-addresses workflow
-# 2. Build from IntersectMBO/cardano-addresses tag v4.0.0
+# 2. Build from IntersectMBO/cardano-addresses tag 4.0.0
 # 3. Create release with ARM64 binaries
 ```
 

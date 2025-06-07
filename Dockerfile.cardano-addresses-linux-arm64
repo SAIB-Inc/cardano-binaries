@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     git \
     jq \
     wget \
-    libncursesw5 \
+    libncurses-dev \
     libtool \
     autoconf \
     curl \

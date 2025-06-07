@@ -11,7 +11,6 @@ on:
 jobs:
   test-cardano-addresses-build:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.changed_files, 'Dockerfile.cardano-addresses-linux-arm64') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

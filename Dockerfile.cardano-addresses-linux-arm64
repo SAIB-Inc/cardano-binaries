@@ -1,0 +1,74 @@
+FROM --platform=linux/arm64 ubuntu:22.04
+
+# Build arguments for version control
+ARG CARDANO_ADDRESSES_TAG=master
+ARG GHC_VERSION=9.10
+ARG CABAL_VERSION=3.12.1.0
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    automake \
+    build-essential \
+    pkg-config \
+    libffi-dev \
+    libgmp-dev \
+    libssl-dev \
+    libtinfo-dev \
+    libsystemd-dev \
+    zlib1g-dev \
+    make \
+    g++ \
+    tmux \
+    git \
+    jq \
+    wget \
+    libncursesw5 \
+    libtool \
+    autoconf \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install GHC and Cabal
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+ENV PATH="/root/.ghcup/bin:$PATH"
+
+# Install specific versions used by IntersectMBO
+RUN ghcup install ghc ${GHC_VERSION} && \
+    ghcup set ghc ${GHC_VERSION} && \
+    ghcup install cabal ${CABAL_VERSION} && \
+    ghcup set cabal ${CABAL_VERSION}
+
+# Clone the cardano-addresses repository at specific tag/branch
+WORKDIR /build
+RUN git clone https://github.com/IntersectMBO/cardano-addresses.git && \
+    cd cardano-addresses && \
+    git checkout ${CARDANO_ADDRESSES_TAG}
+
+WORKDIR /build/cardano-addresses
+
+# Configure cabal to use system dependencies
+RUN cabal configure --enable-executable-static
+
+# Update cabal and build
+RUN cabal update && \
+    cabal build cardano-addresses
+
+# Copy the built binary to a known location
+RUN mkdir -p /output && \
+    cp $(cabal list-bin cardano-addresses) /output/cardano-addresses
+
+# Verify the binary works
+RUN /output/cardano-addresses --version
+
+# Create final minimal image
+FROM --platform=linux/arm64 ubuntu:22.04
+RUN apt-get update && apt-get install -y \
+    libgmp10 \
+    libssl3 \
+    libtinfo6 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=0 /output/cardano-addresses /usr/local/bin/cardano-addresses
+RUN chmod +x /usr/local/bin/cardano-addresses
+
+CMD ["cardano-addresses", "--version"]

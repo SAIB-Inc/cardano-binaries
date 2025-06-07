@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 ubuntu:22.04
+FROM ubuntu:22.04
 
 # Build arguments for version control
 ARG CARDANO_ADDRESSES_TAG=master
@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install GHC and Cabal
+ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
 ENV PATH="/root/.ghcup/bin:$PATH"
 

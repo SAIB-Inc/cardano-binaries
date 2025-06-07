@@ -3,7 +3,7 @@ name: Build Cardano Addresses
 on:
   push:
     tags:
-      - 'v*'
+      - 'cardano-addresses-v*'
   workflow_dispatch:
     inputs:
       tag:
@@ -30,8 +30,14 @@ jobs:
         id: determine_tag
         run: |
           if [ "${{ github.event_name }}" = "push" ]; then
-            # Use the same tag from this repo for cardano-addresses
-            CARDANO_TAG="${{ github.ref_name }}"
+            # Extract version from binary-specific tag (e.g., cardano-addresses-v3.15.0 -> v3.15.0)
+            TAG_NAME="${{ github.ref_name }}"
+            if [[ "$TAG_NAME" == cardano-addresses-* ]]; then
+              CARDANO_TAG="${TAG_NAME#cardano-addresses-}"
+            else
+              echo "Error: Tag must start with 'cardano-addresses-'"
+              exit 1
+            fi
           else
             CARDANO_TAG="${{ github.event.inputs.tag }}"
           fi
@@ -81,6 +87,21 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
+      - name: Determine release tag
+        id: release_tag
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+            if [[ "$TAG_NAME" == cardano-addresses-* ]]; then
+              CARDANO_TAG="${TAG_NAME#cardano-addresses-}"
+            else
+              CARDANO_TAG="$TAG_NAME"
+            fi
+          else
+            CARDANO_TAG="${{ github.event.inputs.tag }}"
+          fi
+          echo "cardano_tag=$CARDANO_TAG" >> $GITHUB_OUTPUT
+          
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -93,11 +114,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
-          name: Cardano Addresses ${{ github.event.inputs.tag || github.ref_name }}
+          name: Cardano Addresses ${{ steps.release_tag.outputs.cardano_tag }}
           body: |
             ## Cardano Addresses Binary Release
             
             This release contains the `cardano-addresses` binary compiled for various platforms.
+            Built from IntersectMBO/cardano-addresses tag: `${{ steps.release_tag.outputs.cardano_tag }}`
             
             ### Linux ARM64 (Raspberry Pi)
             - `cardano-addresses-linux-arm64.tar.gz` - Binary for Linux ARM64
@@ -115,6 +137,12 @@ jobs:
             ```bash
             cardano-addresses --help
             ```
+            
+            ### Release Notes
+            This binary was built using:
+            - GHC 9.10
+            - Cabal 3.12.1.0 
+            - Static linking for maximum portability
           files: |
             artifacts/**/*
           draft: false

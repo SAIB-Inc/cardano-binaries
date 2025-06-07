@@ -52,17 +52,18 @@ RUN cabal configure --enable-executable-static
 
 # Update cabal and build
 RUN cabal update && \
-    cabal build cardano-addresses
+    cabal build all
 
-# Copy the built binary to a known location
+# List and copy the built binary
 RUN mkdir -p /output && \
-    cp $(cabal list-bin cardano-addresses) /output/cardano-addresses
+    cabal list-bin all && \
+    cp $(cabal list-bin all | grep cardano-address | head -1) /output/cardano-addresses
 
 # Verify the binary works
 RUN /output/cardano-addresses --version
 
 # Create final minimal image
-FROM --platform=linux/arm64 ubuntu:22.04
+FROM ubuntu:22.04
 RUN apt-get update && apt-get install -y \
     libgmp10 \
     libssl3 \

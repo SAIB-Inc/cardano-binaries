@@ -2,7 +2,7 @@ FROM --platform=linux/arm64 ubuntu:22.04
 
 # Build arguments for version control
 ARG CARDANO_ADDRESSES_TAG=master
-ARG GHC_VERSION=9.10
+ARG GHC_VERSION=9.10.1
 ARG CABAL_VERSION=3.12.1.0
 
 # Install build dependencies

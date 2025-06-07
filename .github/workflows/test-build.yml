@@ -1,0 +1,36 @@
+name: Test Build
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile.*'
+      - '.github/workflows/build-*.yml'
+  workflow_dispatch:
+
+jobs:
+  test-cardano-addresses-build:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.changed_files, 'Dockerfile.cardano-addresses-linux-arm64') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test build cardano-addresses for Linux ARM64
+        run: |
+          docker buildx build \
+            --platform linux/arm64 \
+            --build-arg CARDANO_ADDRESSES_TAG=v4.0.0 \
+            --build-arg GHC_VERSION=9.10.1 \
+            --build-arg CABAL_VERSION=3.12.1.0 \
+            -f Dockerfile.cardano-addresses-linux-arm64 \
+            --progress=plain \
+            -t cardano-addresses-test \
+            --load .
+
+      - name: Test binary functionality
+        run: |
+          docker run --rm cardano-addresses-test cardano-addresses --version

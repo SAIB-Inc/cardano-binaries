@@ -1,6 +1,28 @@
 # Cardano Binaries
 
-Cross-platform binary releases for Cardano ecosystem tools.
+> 🚀 **Enterprise-grade cross-platform binary releases for Cardano ecosystem tools**  
+> *Powered by [SAIB Inc.](https://github.com/SAIB-Inc) | Automated builds from official IntersectMBO sources*
+
+[![Build Status](https://github.com/SAIB-Inc/cardano-binaries/workflows/Build%20Cardano%20Addresses/badge.svg)](https://github.com/SAIB-Inc/cardano-binaries/actions)
+[![License](https://img.shields.io/github/license/SAIB-Inc/cardano-binaries)](LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/SAIB-Inc/cardano-binaries)](https://github.com/SAIB-Inc/cardano-binaries/releases/latest)
+
+## 🎯 **What We Provide**
+
+Ready-to-use, statically-linked Cardano binaries for multiple platforms:
+- ✅ **ARM64 Linux** (Raspberry Pi, Apple Silicon servers)
+- 🚧 **x64 Linux** (Traditional servers) 
+- 🚧 **macOS** (Intel & Apple Silicon)
+- 🚧 **Windows** (x64)
+
+## 🔥 **Why Choose Our Binaries?**
+
+- 🔒 **Security-First**: Non-root execution, minimal attack surface
+- ⚡ **Performance**: Optimized builds with intelligent caching  
+- 🛡️ **Reliability**: Enterprise-grade error handling & validation
+- 📦 **Portable**: Static linking ensures maximum compatibility
+- 🤖 **Automated**: Direct builds from official IntersectMBO sources
+- ✅ **Verified**: Comprehensive testing & checksum validation
 
 ## Available Binaries
 
@@ -82,3 +104,34 @@ To add support for a new Cardano binary:
 ### Questions?
 
 Open an issue for questions about contributing or adding new binary support.
+
+---
+
+## 🏢 **About SAIB**
+
+**SAIB** is a software development company based in the Philippines, established by connecting the dots of its founders' shared passion for Cardano. We specialize in:
+
+- 🚀 **Cardano Development**: .NET ecosystem integration with Chrysalis & Argus frameworks
+- 🔧 **Developer Tools**: Open-source utilities for the Cardano ecosystem  
+- 🏗️ **Digital Transformation**: Custom blockchain integrations and enterprise solutions
+- 📦 **Infrastructure**: Cross-platform binary distributions and developer resources
+
+*"Softwarez, at its Best - Where Software Meets Perfection"*
+
+**Connect with us:**
+- 🌐 **Website**: [saib.dev](https://saib.dev)
+- 📚 **Documentation**: [docs.saib.dev](https://docs.saib.dev)
+- 🐙 **GitHub**: [@SAIB-Inc](https://github.com/SAIB-Inc)
+- 📅 **Schedule a Call**: [calendly.com/saibdev](https://calendly.com/saibdev)
+- 🐦 **Twitter**: [@saibdev](https://x.com/saibdev)
+- 💼 **LinkedIn**: [SAIB LLC](https://www.linkedin.com/company/saibllc/)
+
+---
+
+<div align="center">
+
+**⭐ Star this repo if you find it useful!**
+
+Made with ❤️ by [SAIB](https://saib.dev) | Contributing to the Cardano ecosystem
+
+</div>

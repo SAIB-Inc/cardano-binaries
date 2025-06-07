@@ -173,33 +173,12 @@ jobs:
           tag_name: ${{ github.event.inputs.tag || github.ref_name }}
           name: Cardano Addresses ${{ steps.release_tag.outputs.cardano_tag }}
           body: |
-            ## Cardano Addresses Binary Release
+            Compiled binary release for cardano-addresses v${{ steps.release_tag.outputs.cardano_tag }}.
             
-            This release contains the `cardano-addresses` binary compiled for various platforms.
-            Built from IntersectMBO/cardano-addresses tag: `${{ steps.release_tag.outputs.cardano_tag }}`
-            
-            ### Linux ARM64 (Raspberry Pi)
-            - `cardano-addresses-linux-arm64.tar.gz` - Binary for Linux ARM64
-            - `cardano-addresses-linux-arm64.tar.gz.sha256` - SHA256 checksum
-            
-            ### Installation
-            
-            1. Download the appropriate binary for your platform
-            2. Verify the checksum: `sha256sum -c cardano-addresses-linux-arm64.tar.gz.sha256`
-            3. Extract: `tar -xzf cardano-addresses-linux-arm64.tar.gz`
-            4. Make executable: `chmod +x cardano-addresses`
-            5. Move to PATH: `sudo mv cardano-addresses /usr/local/bin/`
-            
-            ### Usage
-            ```bash
-            cardano-addresses --help
-            ```
-            
-            ### Release Notes
-            This binary was built using:
-            - GHC 9.10.1
-            - Cabal 3.12.1.0 
-            - Static linking for maximum portability
+            **Download:** `cardano-addresses-linux-arm64.tar.gz`  
+            **Verify:** `sha256sum -c cardano-addresses-linux-arm64.tar.gz.sha256`  
+            **Extract:** `tar -xzf cardano-addresses-linux-arm64.tar.gz`  
+            **Run:** `./cardano-addresses --version`
           files: |
             artifacts/**/*
           draft: false

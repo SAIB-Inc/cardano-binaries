@@ -28,6 +28,7 @@ Building Cardano tools from source is frustrating:
 | Tool | Description | Platforms |
 |------|-------------|-----------|
 | **cardano-addresses** | Derive and validate Cardano addresses | ARM64 Linux (Raspberry Pi) |
+| **bech32** | Encode/decode Bech32 address format | ARM64 Linux (Raspberry Pi) |
 | cardano-cli | *Coming soon* | - |
 | cardano-node | *Coming soon* | - |
 
@@ -47,6 +48,10 @@ We use binary-specific tags to trigger automated builds:
 # Release cardano-addresses version 4.0.0
 git tag cardano-addresses-4.0.0
 git push origin cardano-addresses-4.0.0
+
+# Release bech32 version 1.1.7
+git tag bech32-1.1.7
+git push origin bech32-1.1.7
 ```
 
 This automatically:
@@ -59,6 +64,7 @@ This automatically:
 | Tool | Linux ARM64 | Linux x64 | macOS | Windows |
 |------|-------------|-----------|-------|---------|
 | cardano-addresses | ✅ | 🚧 | 🚧 | 🚧 |
+| bech32 | ✅ | 🚧 | 🚧 | 🚧 |
 | cardano-cli | 🚧 | 🚧 | 🚧 | 🚧 |
 | cardano-node | 🚧 | 🚧 | 🚧 | 🚧 |
 

@@ -1,0 +1,97 @@
+FROM ubuntu:22.04
+
+# Metadata
+LABEL org.opencontainers.image.title="Bech32 Builder"
+LABEL org.opencontainers.image.description="Multi-stage build for bech32 binary"
+LABEL org.opencontainers.image.source="https://github.com/SAIB-Inc/cardano-binaries"
+
+# Build arguments for version control
+ARG BECH32_TAG=master
+ARG GHC_VERSION=9.10.1
+ARG CABAL_VERSION=3.12.1.0
+
+# Install build dependencies (only what's needed)
+RUN apt-get update && apt-get install -y \
+    automake \
+    build-essential \
+    pkg-config \
+    libffi-dev \
+    libgmp-dev \
+    libssl-dev \
+    libtinfo-dev \
+    libsystemd-dev \
+    zlib1g-dev \
+    make \
+    g++ \
+    git \
+    libncurses-dev \
+    libtool \
+    autoconf \
+    curl \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Install GHC and Cabal
+ENV BOOTSTRAP_HASKELL_NONINTERACTIVE=1
+RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | sh
+ENV PATH="/root/.ghcup/bin:$PATH"
+
+# Install specific versions used by IntersectMBO
+RUN ghcup install ghc ${GHC_VERSION} && \
+    ghcup set ghc ${GHC_VERSION} && \
+    ghcup install cabal ${CABAL_VERSION} && \
+    ghcup set cabal ${CABAL_VERSION}
+
+# Clone the bech32 repository at specific tag/branch
+WORKDIR /build
+RUN git clone https://github.com/input-output-hk/bech32.git && \
+    cd bech32 && \
+    git checkout ${BECH32_TAG}
+
+WORKDIR /build/bech32
+
+# Configure cabal to use system dependencies
+RUN cabal configure --enable-executable-static
+
+# Update cabal and build (only executables, skip tests)
+RUN cabal update && \
+    cabal build exe:bech32
+
+# List and copy the built binary
+RUN mkdir -p /output && \
+    cp $(cabal list-bin exe:bech32) /output/bech32
+
+# Verify the binary works
+RUN /output/bech32 --version
+
+# Create final minimal image
+FROM ubuntu:22.04
+
+# Metadata for final image
+LABEL org.opencontainers.image.title="Bech32"
+LABEL org.opencontainers.image.description="Bech32 encoding/decoding tool"
+LABEL org.opencontainers.image.source="https://github.com/SAIB-Inc/cardano-binaries"
+LABEL org.opencontainers.image.vendor="SAIB Inc"
+
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y \
+    libgmp10 \
+    libssl3 \
+    libtinfo6 \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd -r bech32 && useradd -r -g bech32 -s /bin/bash bech32
+
+# Copy binary and set permissions
+COPY --from=0 /output/bech32 /usr/local/bin/bech32
+RUN chmod +x /usr/local/bin/bech32
+
+# Switch to non-root user
+USER bech32
+WORKDIR /home/bech32
+
+CMD ["bech32", "--version"]

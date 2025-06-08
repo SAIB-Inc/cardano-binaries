@@ -112,7 +112,7 @@ jobs:
       - name: Extract binary from container
         run: |
           mkdir -p artifacts
-          docker run --rm -v $(pwd)/artifacts:/output cardano-addresses-builder sh -c "cp /usr/local/bin/cardano-addresses /output/"
+          docker run --rm --user root -v $(pwd)/artifacts:/output cardano-addresses-builder sh -c "cp /usr/local/bin/cardano-addresses /output/"
           
       - name: Verify binary
         run: |

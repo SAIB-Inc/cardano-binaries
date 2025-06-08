@@ -1,5 +1,8 @@
 name: Build Cardano Addresses
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:

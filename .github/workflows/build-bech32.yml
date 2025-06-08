@@ -1,0 +1,188 @@
+name: Build Bech32
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'bech32-*'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile.bech32-*'
+      - '.github/workflows/build-bech32.yml'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Bech32 tag/branch to build (e.g., 1.1.7)'
+        required: true
+        default: 'master'
+      ghc_version:
+        description: 'GHC version to use'
+        required: false
+        default: '9.10.1'
+      cabal_version:
+        description: 'Cabal version to use'
+        required: false
+        default: '3.12.1.0'
+
+jobs:
+  test-build:
+    runs-on: ubuntu-22.04-arm
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test build bech32 for Linux ARM64
+        run: |
+          docker buildx build \
+            --build-arg BECH32_TAG=1.1.7 \
+            --build-arg GHC_VERSION=9.10.1 \
+            --build-arg CABAL_VERSION=3.12.1.0 \
+            --cache-from=type=gha,scope=test-bech32-arm64 \
+            --cache-to=type=gha,mode=max,scope=test-bech32-arm64 \
+            -f Dockerfile.bech32-linux-arm64 \
+            --progress=plain \
+            -t bech32-test \
+            --load .
+
+      - name: Test binary functionality
+        run: |
+          echo "Testing bech32 binary..."
+          docker run --rm bech32-test bech32 --version
+          echo "Testing help command..."
+          docker run --rm bech32-test bech32 --help
+          echo "Testing user permissions..."
+          docker run --rm bech32-test whoami
+          echo "✅ All tests passed!"
+
+  build-linux-arm64:
+    runs-on: ubuntu-22.04-arm
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine bech32 tag
+        id: determine_tag
+        run: |
+          set -euo pipefail
+          
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Extract version from binary-specific tag (e.g., bech32-1.1.7 -> 1.1.7)
+            TAG_NAME="${{ github.ref_name }}"
+            if [[ "$TAG_NAME" == bech32-* ]]; then
+              BECH32_TAG="${TAG_NAME#bech32-}"
+              if [ -z "$BECH32_TAG" ]; then
+                echo "Error: Invalid tag format - version part is empty"
+                exit 1
+              fi
+            else
+              echo "Error: Tag must start with 'bech32-', got: $TAG_NAME"
+              exit 1
+            fi
+          else
+            BECH32_TAG="${{ github.event.inputs.tag }}"
+            if [ -z "$BECH32_TAG" ]; then
+              echo "Error: Tag input cannot be empty"
+              exit 1
+            fi
+          fi
+          
+          echo "bech32_tag=$BECH32_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Building bech32 from tag/branch: $BECH32_TAG"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build bech32 for Linux ARM64
+        run: |
+          docker buildx build \
+            --build-arg BECH32_TAG=${{ steps.determine_tag.outputs.bech32_tag }} \
+            --build-arg GHC_VERSION=${{ github.event.inputs.ghc_version || '9.10.1' }} \
+            --build-arg CABAL_VERSION=${{ github.event.inputs.cabal_version || '3.12.1.0' }} \
+            --cache-from=type=gha,scope=build-bech32-arm64 \
+            --cache-to=type=gha,mode=max,scope=build-bech32-arm64 \
+            -f Dockerfile.bech32-linux-arm64 \
+            -t bech32-builder \
+            --load .
+
+      - name: Extract binary from container
+        run: |
+          mkdir -p artifacts
+          docker run --rm --user root -v $(pwd)/artifacts:/output bech32-builder sh -c "cp /usr/local/bin/bech32 /output/"
+          
+      - name: Verify binary
+        run: |
+          file artifacts/bech32
+          ls -la artifacts/
+
+      - name: Compress binary
+        run: |
+          cd artifacts
+          tar -czf bech32-linux-arm64.tar.gz bech32
+          sha256sum bech32-linux-arm64.tar.gz > bech32-linux-arm64.tar.gz.sha256
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bech32-linux-arm64
+          path: |
+            artifacts/bech32-linux-arm64.tar.gz
+            artifacts/bech32-linux-arm64.tar.gz.sha256
+
+  release:
+    needs: build-linux-arm64
+    runs-on: ubuntu-22.04-arm
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Determine release tag
+        id: release_tag
+        run: |
+          set -euo pipefail
+          
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG_NAME="${{ github.ref_name }}"
+            if [[ "$TAG_NAME" == bech32-* ]]; then
+              BECH32_TAG="${TAG_NAME#bech32-}"
+            else
+              BECH32_TAG="$TAG_NAME"
+            fi
+          else
+            BECH32_TAG="${{ github.event.inputs.tag }}"
+          fi
+          
+          echo "bech32_tag=$BECH32_TAG" >> $GITHUB_OUTPUT
+          echo "✅ Release tag determined: $BECH32_TAG"
+          
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: find artifacts -type f
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+          name: Bech32 ${{ steps.release_tag.outputs.bech32_tag }}
+          body: |
+            Compiled binary release for bech32 v${{ steps.release_tag.outputs.bech32_tag }}.
+            
+            **Download:** `bech32-linux-arm64.tar.gz`  
+            **Verify:** `sha256sum -c bech32-linux-arm64.tar.gz.sha256`  
+            **Extract:** `tar -xzf bech32-linux-arm64.tar.gz`  
+            **Run:** `./bech32 --version`
+          files: |
+            artifacts/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

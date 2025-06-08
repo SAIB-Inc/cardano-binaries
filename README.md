@@ -12,7 +12,7 @@ Building Cardano tools from source is frustrating:
 - ❌ **Hours of compilation** time on slower machines
 - ❌ **Complex dependency chains** that break randomly  
 - ❌ **Platform-specific issues** that waste your time
-- ❌ **Missing ARM64 support** for Raspberry Pi users
+- ❌ **Missing ARM64 support** for modern hardware
 
 ## The Solution
 
@@ -20,15 +20,15 @@ Building Cardano tools from source is frustrating:
 
 - ✅ **Ready in seconds** - No compilation required
 - ✅ **All dependencies included** - Static linking means it just works
-- ✅ **Raspberry Pi support** - First-class ARM64 binaries  
+- ✅ **ARM64 support** - First-class binaries for modern hardware  
 - ✅ **Built from official sources** - Same code, pre-compiled for you
 
 ## What's Available
 
 | Tool | Description | Platforms |
 |------|-------------|-----------|
-| **cardano-addresses** | Derive and validate Cardano addresses | ARM64 Linux (Raspberry Pi) |
-| **bech32** | Encode/decode Bech32 address format | ARM64 Linux (Raspberry Pi) |
+| **cardano-addresses** | Derive and validate Cardano addresses | ARM64 Linux |
+| **bech32** | Encode/decode Bech32 address format | ARM64 Linux |
 | cardano-cli | *Coming soon* | - |
 | cardano-node | *Coming soon* | - |
 

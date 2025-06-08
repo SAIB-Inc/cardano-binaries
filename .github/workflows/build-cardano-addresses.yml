@@ -26,7 +26,7 @@ on:
 
 jobs:
   test-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04-arm
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout repository
@@ -35,15 +35,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Test build cardano-addresses for Linux x64 (no emulation)
+      - name: Test build cardano-addresses for Linux ARM64
         run: |
           docker buildx build \
-            --platform linux/amd64 \
             --build-arg CARDANO_ADDRESSES_TAG=4.0.0 \
             --build-arg GHC_VERSION=9.10.1 \
             --build-arg CABAL_VERSION=3.12.1.0 \
-            --cache-from=type=gha,scope=test-amd64 \
-            --cache-to=type=gha,mode=max,scope=test-amd64 \
+            --cache-from=type=gha,scope=test-arm64 \
+            --cache-to=type=gha,mode=max,scope=test-arm64 \
             -f Dockerfile.cardano-addresses-linux-arm64 \
             --progress=plain \
             -t cardano-addresses-test \
@@ -60,7 +59,7 @@ jobs:
           echo "✅ All tests passed!"
 
   build-linux-arm64:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04-arm
     if: github.event_name != 'pull_request'
     steps:
       - name: Checkout repository
@@ -101,7 +100,6 @@ jobs:
       - name: Build cardano-addresses for Linux ARM64
         run: |
           docker buildx build \
-            --platform linux/arm64 \
             --build-arg CARDANO_ADDRESSES_TAG=${{ steps.determine_tag.outputs.cardano_tag }} \
             --build-arg GHC_VERSION=${{ github.event.inputs.ghc_version || '9.10.1' }} \
             --build-arg CABAL_VERSION=${{ github.event.inputs.cabal_version || '3.12.1.0' }} \
@@ -137,7 +135,7 @@ jobs:
 
   release:
     needs: build-linux-arm64
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04-arm
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     steps:
       - name: Determine release tag

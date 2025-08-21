@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chore/docker-push
     paths:
       - 'docker/cardano-monitor/**'
       - '.github/workflows/cardano-monitor.yml'

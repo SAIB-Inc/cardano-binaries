@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - chore/docker-push
     paths:
       - 'docker/cardano-node/**'
       - 'docker/cardano-monitor/**'

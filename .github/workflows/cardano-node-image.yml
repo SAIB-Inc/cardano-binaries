@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chore/docker-push
     paths:
       - 'docker/cardano-node/**'
       - 'docker/cardano-monitor/**'
@@ -57,7 +56,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.18.0
         with:
-          context: ./cardano-node
+          context: ./docker/cardano-node
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -100,7 +99,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.18.0
         with:
-          context: ./cardano-monitor
+          context: ./docker/cardano-monitor
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

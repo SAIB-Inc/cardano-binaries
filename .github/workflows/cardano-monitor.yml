@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - chore/docker-push
     paths:
       - 'docker/cardano-monitor/**'
       - '.github/workflows/cardano-monitor.yml'
@@ -54,7 +53,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6.18.0
         with:
-          context: ./cardano-monitor
+          context: ./docker/cardano-monitor
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

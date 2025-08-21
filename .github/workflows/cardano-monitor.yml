@@ -16,7 +16,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: cardano-binaries/cardano-monitor
+  IMAGE_NAME: saib-inc/cardano-monitor
 
 jobs:
   build-and-push:

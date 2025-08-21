@@ -18,8 +18,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  CARDANO_NODE_IMAGE: cardano-binaries/cardano-node
-  CARDANO_MONITOR_IMAGE: cardano-binaries/cardano-monitor
+  CARDANO_NODE_IMAGE: saib-inc/cardano-node-socat
+  CARDANO_MONITOR_IMAGE: saib-inc/cardano-monitor-socat
 
 jobs:
   build-cardano-node:
